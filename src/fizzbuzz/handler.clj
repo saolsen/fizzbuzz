@@ -4,29 +4,29 @@
   (:use compojure.core)
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
-            [ring.util.response :as ring]
-            [clojure.java.io :as io]))
+            [ring.util.response :as ring]))
 
 (defn multiple? [multiple factor]
   (= 0 (mod multiple factor)))
 
-; TODO stream response instead of string (https://groups.google.com/forum/?fromgroups=#!topic/ring-clojure/qIT8D7eQJeQ)
-(defn fizzbuzz-printer [from to]
-  (let [multiple3? (multiple? from 3)
-        multiple5? (multiple? from 5)]
+(defn fizzbuzz-string [x]
+  (let [multiple3? (multiple? x 3)
+        multiple5? (multiple? x 5)]
   (cond
-  	(< to from) nil
-  	(and multiple3? multiple5?) (str "FizzBuzz\n" (fizzbuzz-printer (+ 1 from) to))
-  	multiple3? (str "Fizz\n" (fizzbuzz-printer (+ 1 from) to))
-  	multiple5? (str "Buzz\n" (fizzbuzz-printer (+ 1 from) to))
-  	:else (str from "\n" (fizzbuzz-printer (+ 1 from) to)))))
+  	(and multiple3? multiple5?) "FizzBuzz\n"
+  	multiple3? "Fizz\n"
+  	multiple5? "Buzz\n"
+  	:else (str x "\n"))))
 
 (defn fizzbuzz [params]
   (try
     (let [from (Integer/parseInt (:from params))
           to (Integer/parseInt (:to params))]
-      (fizzbuzz-printer from to))
-    (catch NumberFormatException e {:status 400 :body "Invalid Range"}))) 
+      (apply str
+	      (for [x (range from to)
+	            :let [result (fizzbuzz-string x)]]
+	        result)))
+    (catch NumberFormatException e {:status 400 :body "Invalid Range"})))
 
 (defroutes app-routes
   (GET "/" {params :params} (fizzbuzz params))
