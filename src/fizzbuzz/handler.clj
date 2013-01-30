@@ -1,9 +1,11 @@
 ; TODO JSON response
+; TODO response time (HTML response)
 (ns fizzbuzz.handler
   (:use compojure.core)
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
-            [ring.util.response :as ring]))
+            [ring.util.response :as ring]
+            [clojure.java.io :as io]))
 
 (defn multiple? [multiple factor]
   (= 0 (mod multiple factor)))
@@ -19,17 +21,15 @@
   	multiple5? (str "Buzz\n" (fizzbuzz-printer (+ 1 from) to))
   	:else (str from "\n" (fizzbuzz-printer (+ 1 from) to)))))
 
-; TODO actually throw 400
 (defn fizzbuzz [params]
   (try
     (let [from (Integer/parseInt (:from params))
           to (Integer/parseInt (:to params))]
       (fizzbuzz-printer from to))
-    (catch NumberFormatException e (ring/redirect "/error")))) 
+    (catch NumberFormatException e {:status 400 :body "Invalid Range"}))) 
 
 (defroutes app-routes
   (GET "/" {params :params} (fizzbuzz params))
-  (GET "/error" [] "Invalid Range")
   (route/not-found "Not Found"))
 
 (def app
