@@ -6,4 +6,5 @@
   :plugins [[lein-ring "0.8.2"]]
   :ring {:handler fizzbuzz.handler/app}
   :profiles
-  {:dev {:dependencies [[ring-mock "0.1.3"]]}})
+  {:dev {:dependencies [[ring-mock "0.1.3"]]}}
+  ::min-lein-version "2.0.0")
