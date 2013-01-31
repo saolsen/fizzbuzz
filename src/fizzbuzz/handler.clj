@@ -1,10 +1,9 @@
-; TODO JSON response
-; TODO response time (HTML response)
 (ns fizzbuzz.handler
   (:use compojure.core)
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
-            [ring.util.response :as ring]))
+            [ring.util.response :as ring]
+            [ring.util.io :as io]))
 
 (defn multiple? [multiple factor]
   (= 0 (mod multiple factor)))
@@ -22,11 +21,11 @@
   (try
     (let [from (Integer/parseInt (:from params))
           to (Integer/parseInt (:to params))]
-      (apply str
-	      (for [x (range from to)
-	            :let [result (fizzbuzz-string x)]]
-	        result)))
-    (catch NumberFormatException e {:status 400 :body "Invalid Range"})))
+      (io/piped-input-stream
+        (fn [ostream]
+          (doseq [x (range from (inc to))]
+            (.write ostream (.getBytes (fizzbuzz-string x)))))))
+    (catch NumberFormatException e {:status 400 :body "'from' and 'to' query parameters must exist and be integers."})))
 
 (defroutes app-routes
   (GET "/" {params :params} (fizzbuzz params))
